@@ -4,18 +4,6 @@ This project deploys a secure, highly-available application on AWS using Terrafo
 
 ## Architecture Overview
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  CloudFront │────▶│     ALB     │────▶│   EC2 (ASG) │
-└─────────────┘     └─────────────┘     └─────────────┘
-       │                   │                   │
-       ▼                   ▼                   ▼
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  S3 Logs    │     │  Route 53   │     │  CloudWatch │
-└─────────────┘     └─────────────┘     └─────────────┘
-```
-
----
 
 ## Prerequisites
 
