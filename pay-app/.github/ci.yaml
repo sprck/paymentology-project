@@ -1,0 +1,26 @@
+name: CI - Lint
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'feat/**'
+      - 'bugfix/**'
+      - 'hotfix/**'
+
+jobs:
+  lint:
+    name: Terraform Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+
+      - name: Run TFLint
+        run: |
+          tflint --init
+          tflint --recursive

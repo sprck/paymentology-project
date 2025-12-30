@@ -1,0 +1,102 @@
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "root",
+    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"
+  },
+  "metrics": {
+    "namespace": "CWAgent",
+    "metrics_collected": {
+      "cpu": {
+        "measurement": [
+          "cpu_usage_idle",
+          "cpu_usage_user",
+          "cpu_usage_system"
+        ],
+        "metrics_collection_interval": 60,
+        "totalcpu": true,
+        "resources": ["*"]
+      },
+      "mem": {
+        "measurement": [
+          "mem_used_percent",
+          "mem_used",
+          "mem_total"
+        ],
+        "metrics_collection_interval": 60
+      },
+      "disk": {
+        "measurement": [
+          "disk_used_percent",
+          "disk_used",
+          "disk_total"
+        ],
+        "metrics_collection_interval": 60,
+        "resources": ["/"],
+        "ignore_file_system_types": ["sysfs", "devtmpfs", "tmpfs"]
+      },
+      "diskio": {
+        "measurement": [
+          "diskio_reads",
+          "diskio_writes",
+          "diskio_read_bytes",
+          "diskio_write_bytes"
+        ],
+        "metrics_collection_interval": 60,
+        "resources": ["*"]
+      },
+      "netstat": {
+        "measurement": [
+          "tcp_established",
+          "tcp_time_wait"
+        ],
+        "metrics_collection_interval": 60
+      }
+    },
+    "append_dimensions": {
+      "AutoScalingGroupName": "${aws:AutoScalingGroupName}",
+      "InstanceId": "${aws:InstanceId}",
+      "InstanceType": "${aws:InstanceType}"
+    },
+    "aggregation_dimensions": [
+      ["AutoScalingGroupName"]
+    ]
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/messages",
+            "log_group_name": "/pay-app/ec2/system-logs",
+            "log_stream_name": "{instance_id}/messages",
+            "retention_in_days": 14,
+            "timezone": "UTC"
+          },
+          {
+            "file_path": "/var/log/secure",
+            "log_group_name": "/pay-app/ec2/system-logs",
+            "log_stream_name": "{instance_id}/secure",
+            "retention_in_days": 14,
+            "timezone": "UTC"
+          },
+          {
+            "file_path": "/var/log/cloud-init-output.log",
+            "log_group_name": "/pay-app/ec2/system-logs",
+            "log_stream_name": "{instance_id}/cloud-init-output",
+            "retention_in_days": 14,
+            "timezone": "UTC"
+          },
+          {
+            "file_path": "/home/ec2-user/.pm2/logs/*.log",
+            "log_group_name": "/pay-app/ec2/system-logs",
+            "log_stream_name": "{instance_id}/pm2-app",
+            "retention_in_days": 14,
+            "timezone": "UTC"
+          }
+        ]
+      }
+    },
+    "log_stream_name": "{instance_id}/default"
+  }
+}

@@ -1,0 +1,224 @@
+# Paymentology Demo Application - Terraform Deployment
+
+This project deploys a secure, highly-available application on AWS using Terraform to three environnments (Dev, Qa, Prod) Using the same code Base (terraform workspace).
+
+## Architecture Overview
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  CloudFront │────▶│     ALB     │────▶│   EC2 (ASG) │
+└─────────────┘     └─────────────┘     └─────────────┘
+       │                   │                   │
+       ▼                   ▼                   ▼
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  S3 Logs    │     │  Route 53   │     │  CloudWatch │
+└─────────────┘     └─────────────┘     └─────────────┘
+```
+
+---
+
+## Prerequisites
+
+### Required Tools
+
+Tools
+
+ Terraform       
+ AWS CLI   
+ Node.js
+ GitHub Account
+
+
+### AWS Requirements
+
+- AWS Account with appropriate permissions
+- IAM user or role with programmatic access
+- Registered domain name (for Route 53 and ACM)
+- AWS CLI configured with credentials:
+
+
+### Required IAM Permissions
+
+The deploying user/role needs permissions for:
+- EC2, VPC, Auto Scaling
+- S3, KMS, IAM
+- CloudFront, Route 53, ACM
+- CloudWatch, CloudTrail, SNS
+- Systems Manager (SSM)
+- API Gateway
+
+---
+
+## Project Structure
+
+```
+pay-app/
+├── app.tf              # Module instantiation
+├── provider.tf         # AWS provider configuration
+├── variables.tf        # Input variable definitions
+├── terraform.tfvars    # Variable values (not committed)
+├── example.tfvars      # Example variable file
+├── output.tf           # Output definitions
+├── locals.tf           # Local values
+├── .gitignore          # Git ignore rules
+└── src/
+    ├── server.js       # Node.js application
+    └── index.html      # Frontend HTML
+```
+
+---
+
+## Variable Explanations
+
+### Required Variables
+
+| Variable | Type | Description |
+| :------- | :--- | :---------- |
+| `ami_id` | string | Amazon Machine Image ID for EC2 instances (Amazon Linux 2023 recommended) |
+| `alert_email` | string | Email address for SNS alarm notifications (must confirm subscription) |
+| `domain_name` | string | Your registered domain name (e.g., `example.com`) |
+
+### Optional Variables
+
+| Variable | Type | Default | Description |
+| :------- | :--- | :------ | :---------- |
+| `app_name` | string | `pay-app` | Application name prefix for all resources |
+| `vpc_cidr_block` | string | `10.0.0.0/16` | CIDR block for the VPC |
+| `availability_zones` | list(string) | `["us-east-1a", "us-east-1b"]` | AZs for multi-AZ deployment |
+| `instance_type` | string | `t3.micro` | EC2 instance type |
+| `app_port` | number | `8080` | Port the application listens on |
+| `asg_min_size` | number | `2` | Minimum instances in ASG |
+| `asg_max_size` | number | `4` | Maximum instances in ASG |
+| `asg_desired_capacity` | number | `2` | Desired instances in ASG |
+
+---
+
+## Deployment Commands
+
+### Step 1: Clone and Navigate
+git clone <repository-url>
+cd paymentology-demo-app/pay-app
+
+### Step 2: Create Variable File
+cp example.tfvars terraform.tfvars
+
+Edit `terraform.tfvars` with your values:
+
+E.g 
+
+ami_id       = "ami-0123456789abcdef0"
+alert_email  = "your-email@example.com"
+domain_name  = "yourdomain.com"
+
+### Step 3: initialize git repo
+
+git init
+
+### Step 4: checkout to feature branch
+git checkout -b feature/initial-commit
+
+### Step 5: Push to remote repo
+git remote add origin <your-repo-url>
+
+### Step 6: run test and merge
+
+terraform init  
+terraform validate 
+terraform plan 
+terraform apply
+
+### Step 7: Confirm SNS Subscription
+
+Check your email and click the confirmation link to receive alerts.
+
+### Step 8: Update Domain NS Records
+
+After deployment, update your domain registrar with the Route 53 NS records:
+
+
+terraform output hosted_zone_ns_records
+
+## Post-Deployment Steps
+
+### 1. Verify ACM Certificate
+
+The certificate must be validated before HTTPS works:
+
+
+aws acm describe-certificate --certificate-arn $(terraform output -raw acm_certificate_arn)
+
+### 2. Test the Application
+
+# Test via CloudFront
+curl https://$(terraform output -raw cloudfront_domain_name)/health
+
+# Test API endpoints
+curl https://$(terraform output -raw cloudfront_domain_name)/api/about
+curl https://$(terraform output -raw cloudfront_domain_name)/api/tools
+```
+
+### 3. Access the Application
+
+Open in browser:
+
+https://yourdomain.com
+
+
+## Output Descriptions
+
+| Output | Description |
+| :----- | :---------- |
+| `vpc_id` | ID of the created VPC |
+| `public_subnet_ids` | List of public subnet IDs |
+| `private_subnet_ids` | List of private subnet IDs |
+| `alb_dns_name` | DNS name of the Application Load Balancer |
+| `cloudfront_domain_name` | CloudFront distribution domain |
+| `hosted_zone_ns_records` | NS records to configure at domain registrar |
+| `acm_certificate_arn` | ARN of the SSL certificate |
+| `asg_name` | Name of the Auto Scaling Group |
+| `s3_logs_bucket` | Name of the logging S3 bucket |
+
+---
+
+## Cleanup
+
+To destroy all resources:
+
+terraform destroy
+
+Type `yes` when prompted.
+
+## Troubleshooting
+
+### ACM Certificate Stuck in PENDING_VALIDATION
+
+Ensure NS records are updated at your domain registrar and allow up to 30 minutes for DNS propagation.
+
+### ASG Instances Not Becoming Healthy
+
+1. Check instance logs:
+
+aws ssm start-session --target <instance-id>
+sudo cat /var/log/cloud-init-output.log
+
+
+2. Verify security groups allow traffic on port 8080.
+
+### CloudTrail or CloudFront Logging Errors
+
+Ensure the S3 bucket policy and KMS key policy are correctly applied.
+
+
+
+## Security Features
+
+- ✅ Encryption at rest (KMS) for EBS, S3, CloudWatch Logs
+- ✅ Encryption in transit (HTTPS via ACM)
+- ✅ Private subnets for EC2 instances
+- ✅ Security groups with least-privilege access
+- ✅ NACLs for additional network security
+- ✅ CloudTrail for API auditing
+- ✅ VPC Flow Logs for network monitoring
+- ✅ Automated patching via SSM
+- ✅ CloudWatch alarms for monitoring
+- ✅ SNS notifications for critical alerts

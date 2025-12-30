@@ -1,0 +1,84 @@
+name: Prod
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+env:
+  TF_VERSION: "1.6.0"
+  AWS_REGION: "us-east-1"
+
+jobs:
+  plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS OIDC Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: |
+          cd pay-app
+          terraform init
+
+      - name: Select Workspace
+        run: |
+          cd pay-app
+          terraform workspace select prod || terraform workspace new prod
+
+      - name: Terraform Plan
+        run: |
+          cd pay-app
+          terraform plan
+
+  apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS OIDC Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: |
+          cd pay-app
+          terraform init
+
+      - name: Select Workspace
+        run: |
+          cd pay-app
+          terraform workspace select prod || terraform workspace new prod
+
+      - name: Terraform Apply
+        run: |
+          cd pay-app
+          terraform apply -auto-approve
