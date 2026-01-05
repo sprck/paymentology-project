@@ -22,7 +22,7 @@ resource "aws_kms_alias" "pay_app_kms-alias" {
 # ACM Certificate for HTTPS
 
 resource "aws_acm_certificate" "cert_pay_app" {
-  domain_name       = var.domain_name
+  domain_name       = "*.${var.domain_name}"
   validation_method = "DNS"
 
   tags = merge(
@@ -150,11 +150,11 @@ resource "aws_network_acl" "nacl_public_pay_app" {
 # Inbound Rules
   ingress {
     rule_no    = 90
-    protocol   = "-1"
+    protocol   = "tcp"
     action     = "allow"
-    cidr_block = "0.0.0.0/0"  # Allow all traffic from within VPC
-    from_port  = 0
-    to_port    = 0
+    cidr_block = "0.0.0.0/0"  
+    to_port    = 80
+    from_port  = 80
   }
   
   ingress {
@@ -178,7 +178,7 @@ resource "aws_network_acl" "nacl_public_pay_app" {
 # Outbound Rules
   egress {
     rule_no= 100
-    protocol    = "-1" # Allow all outbound traffic
+    protocol    = "-1" 
     action      = "allow"
     cidr_block  = "0.0.0.0/0"
     from_port   = 0
@@ -197,7 +197,7 @@ resource "aws_network_acl" "nacl_private_pay_app" {
     rule_no= 100
     protocol    = "-1"
     action      = "allow"
-    cidr_block  = var.vpc_cidr_block
+    cidr_block  = "0.0.0.0/0"
     from_port   = 0
     to_port     = 0
   }
