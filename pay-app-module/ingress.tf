@@ -92,6 +92,7 @@ resource "aws_cloudfront_distribution" "cfn_pay_app" {
     compress               = true
 
 # Use a managed caching policy for server-side rendered content.
+    cache_policy_id = "4135ea2d-243a-441b-a621-5b699e0fe83d"
     origin_request_policy_id = "216adef6-5c7f-47e4-b989-5492eafa07d3"
   }
 
