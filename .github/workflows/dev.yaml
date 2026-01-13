@@ -7,7 +7,9 @@ on:
   push:
     branches:
       - dev
-
+permissions:
+  id-token: write   # Required for OIDC
+  contents: read    # Required for checkout
 env:
   TF_VERSION: "1.9.7"
   AWS_REGION: "us-east-1"
