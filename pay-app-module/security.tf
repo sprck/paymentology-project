@@ -148,31 +148,14 @@ resource "aws_network_acl" "nacl_public_pay_app" {
   vpc_id = aws_vpc.pay-demo-vpc.id
 
 # Inbound Rules
-  ingress {
-    rule_no    = 90
-    protocol   = "tcp"
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"  
-    to_port    = 80
-    from_port  = 80
-  }
-  
+# Inbound Rules
   ingress {
     rule_no     = 100
-    protocol    = "tcp"
+    protocol    = "-1"
     action      = "allow"
     cidr_block  = "0.0.0.0/0"
-    from_port   = 443 
-    to_port     = 443
-  }
- 
-  ingress {
-    rule_no= 120
-    protocol    = "tcp"
-    action      = "allow"
-    cidr_block  = "0.0.0.0/0"
-    from_port   = 1024 
-    to_port     = 65535
+    from_port   = 0
+    to_port     = 0
   }
 
 # Outbound Rules
@@ -197,27 +180,11 @@ resource "aws_network_acl" "nacl_private_pay_app" {
     rule_no     = 100
     protocol    = "-1"
     action      = "allow"
-    cidr_block  = var.vpc_cidr_block
+    cidr_block  = "0.0.0.0/0"
     from_port   = 0
     to_port     = 0
   }
-  ingress {
-    rule_no    = 90
-    protocol   = "tcp"
-    action     = "allow"
-    cidr_block = "0.0.0.0/0" 
-    from_port  = 443
-    to_port    = 443
-  }
-    ingress {
-    rule_no    = 80
-    protocol   = "tcp"
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"  
-    from_port  = 80
-    to_port    = 80
-  }
-  
+
   
 # Outbound Rules
   egress {
