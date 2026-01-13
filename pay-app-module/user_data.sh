@@ -180,3 +180,21 @@ NGINX
 # --- Enable and start Nginx ---
 systemctl enable nginx
 systemctl restart nginx
+
+# --- Install and Configure CloudWatch Agent ---
+echo "Installing CloudWatch Agent..."
+$PM -y install amazon-cloudwatch-agent
+
+# Fetch configuration from SSM Parameter Store
+echo "Configuring CloudWatch Agent from SSM..."
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+  -a fetch-config \
+  -m ec2 \
+  -s \
+  -c ssm:/pay-app/cw-agent-config
+
+# Enable and start CloudWatch Agent
+systemctl enable amazon-cloudwatch-agent
+systemctl start amazon-cloudwatch-agent
+
+echo "CloudWatch Agent installed and started"

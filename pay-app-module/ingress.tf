@@ -64,7 +64,7 @@ resource "aws_cloudfront_distribution" "cfn_pay_app" {
     custom_origin_config {
       http_port              = 80
       https_port             = 443
-      origin_protocol_policy = "http-only"
+      origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
@@ -92,7 +92,7 @@ resource "aws_cloudfront_distribution" "cfn_pay_app" {
     compress               = true
 
 # Use a managed caching policy for server-side rendered content.
-    cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6" 
+    cache_policy_id = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
     origin_request_policy_id = "216adef6-5c7f-47e4-b989-5492eafa07d3"
   }
 
@@ -206,7 +206,6 @@ resource "aws_api_gateway_integration" "api-gw-integration-pay-app" {
   }
 }
 
-# API Gateway Deployment --Deploys the API to make it callable.
 
 resource "aws_api_gateway_account" "account_settings_pay_app" {
   cloudwatch_role_arn = aws_iam_role.api_gw_logging_role.arn
@@ -235,7 +234,7 @@ resource "aws_api_gateway_stage" "api-gw-stage-pay_app" {
   # Enable detailed access logging.
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.lg_api_gw_pay_app.arn
-    # Use a standard JSON format for access logs.
+  
     format = jsonencode({
       "requestId" : "$context.requestId",
       "ip" : "$context.identity.sourceIp",
@@ -263,7 +262,7 @@ resource "aws_lb" "alb_pay_app" {
   security_groups    = [aws_security_group.alb_sg_pay_app.id]
   subnets            = [for s in aws_subnet.public-subnet-pay_app : s.id]
 
-  enable_deletion_protection = true
+  enable_deletion_protection = false
 
   access_logs {
     bucket = aws_s3_bucket.s3_logs_pay_app.id
@@ -316,7 +315,7 @@ resource "aws_lb_listener" "https_pay_app" {
   port              = 443
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate.cert_pay_app.arn
+  certificate_arn   = aws_acm_certificate_validation.cert_pay_app.certificate_arn
 
   default_action {
     type             = "forward"
@@ -340,7 +339,7 @@ resource "aws_lb" "nlb_pay_app" {
   load_balancer_type = "network"
   subnets = [for s in aws_subnet.private-subnet-pay_app : s.id]
 
-  enable_deletion_protection = true
+  enable_deletion_protection = false
 
   tags = merge(
     var.tags,
