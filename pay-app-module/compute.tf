@@ -4,8 +4,12 @@ resource "aws_launch_template" "lt-pay_app" {
   name_prefix   = "${var.app_name}-"
   image_id      = var.ami_id
   instance_type = var.instance_type
-
   
+  user_data = base64encode(<<-EOF
+${file("${path.module}/user_data.sh")}
+EOF
+)
+
   iam_instance_profile {
     name = aws_iam_instance_profile.ec2_IP_pay_app.name
   }

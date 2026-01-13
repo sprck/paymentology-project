@@ -1,9 +1,9 @@
 # --- General / Provider Variables ---
 
-variable "region" {
-  description = "The AWS region where resources will be deployed."
-  type        = string
-}
+# variable "region" {
+#   description = "The AWS region where resources will be deployed."
+#   type        = string
+# }
 
 # --- Variables for Main.tf ---
 
