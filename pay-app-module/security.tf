@@ -194,24 +194,24 @@ resource "aws_network_acl" "nacl_private_pay_app" {
 
 # Inbound Rules
   ingress {
-    rule_no= 100
+    rule_no     = 100
     protocol    = "-1"
     action      = "allow"
-    cidr_block  = "0.0.0.0/0"
+    cidr_block  = var.vpc_cidr_block
     from_port   = 0
     to_port     = 0
   }
   ingress {
     rule_no    = 90
-    protocol   = "-1"
+    protocol   = "tcp"
     action     = "allow"
     cidr_block = "0.0.0.0/0" 
     from_port  = 443
     to_port    = 443
   }
     ingress {
-    rule_no    = 90
-    protocol   = "-1"
+    rule_no    = 80
+    protocol   = "tcp"
     action     = "allow"
     cidr_block = "0.0.0.0/0"  
     from_port  = 80
