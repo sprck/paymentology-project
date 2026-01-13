@@ -46,7 +46,7 @@ jobs:
       - name: Terraform Plan
         run: |
           cd pay-app
-          terraform plan
+          terraform plan -lock=false
 
   apply:
     name: Terraform Apply
@@ -81,4 +81,4 @@ jobs:
       - name: Terraform Apply
         run: |
           cd pay-app
-          terraform apply -auto-approve
+          terraform apply -auto-approve -lock=false
