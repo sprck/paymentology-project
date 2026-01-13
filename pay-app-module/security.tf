@@ -119,7 +119,7 @@ resource "aws_security_group" "app_sg_pay_app" {
   )
 }
 
-  # Ingress Rule: Allow traffic only from the ALB and NLB on the application port.
+# Ingress Rule: Allow traffic only from the ALB and NLB on the application port.
 
 resource "aws_security_group_rule" "app_from_alb" {
   type                     = "ingress"
@@ -152,7 +152,7 @@ resource "aws_network_acl" "nacl_public_pay_app" {
     rule_no    = 90
     protocol   = "-1"
     action     = "allow"
-    cidr_block = "0.0.0.0/0"  # Allow all traffic from within VPC
+    cidr_block = "0.0.0.0/0" 
     from_port  = 0
     to_port    = 0
   }
@@ -165,7 +165,15 @@ resource "aws_network_acl" "nacl_public_pay_app" {
     from_port   = 443 
     to_port     = 443
   }
-
+  ingress {
+    rule_no    = 80
+    protocol   = "-1"
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"  
+    from_port  = 80
+    to_port    = 80
+  }
+  
   ingress {
     rule_no= 120
     protocol    = "tcp"
@@ -178,7 +186,7 @@ resource "aws_network_acl" "nacl_public_pay_app" {
 # Outbound Rules
   egress {
     rule_no= 100
-    protocol    = "-1" # Allow all outbound traffic
+    protocol    = "-1" 
     action      = "allow"
     cidr_block  = "0.0.0.0/0"
     from_port   = 0
@@ -201,7 +209,24 @@ resource "aws_network_acl" "nacl_private_pay_app" {
     from_port   = 0
     to_port     = 0
   }
-
+  ingress {
+    rule_no    = 90
+    protocol   = "-1"
+    action     = "allow"
+    cidr_block = "0.0.0.0/0" 
+    from_port  = 443
+    to_port    = 443
+  }
+    ingress {
+    rule_no    = 90
+    protocol   = "-1"
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"  
+    from_port  = 80
+    to_port    = 80
+  }
+  
+  
 # Outbound Rules
   egress {
     rule_no= 100
