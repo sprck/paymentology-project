@@ -7,9 +7,11 @@ on:
   push:
     branches:
       - dev
-
+permissions:
+  id-token: write  
+  contents: read    
 env:
-  TF_VERSION: "1.6.0"
+  TF_VERSION: "1.10.0"
   AWS_REGION: "us-east-1"
 
 jobs:
@@ -17,6 +19,9 @@ jobs:
     name: Terraform Plan
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    defaults:
+      run:
+        working-directory: pay-app
 
     steps:
       - name: Checkout
@@ -34,24 +39,21 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
 
       - name: Terraform Init
-        run: |
-          cd pay-app
-          terraform init
+        run: terraform init
 
       - name: Select Workspace
-        run: |
-          cd pay-app
-          terraform workspace select dev || terraform workspace new dev
+        run: terraform workspace select dev || terraform workspace new dev
 
       - name: Terraform Plan
-        run: |
-          cd pay-app
-          terraform plan
+        run: terraform plan --var-file=dev.tfvars -lock=false
 
   apply:
     name: Terraform Apply
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
+    defaults:
+      run:
+        working-directory: pay-app
 
     steps:
       - name: Checkout
@@ -69,16 +71,10 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
 
       - name: Terraform Init
-        run: |
-          cd pay-app
-          terraform init
+        run: terraform init
 
       - name: Select Workspace
-        run: |
-          cd pay-app
-          terraform workspace select dev || terraform workspace new dev
+        run: terraform workspace select dev || terraform workspace new dev
 
       - name: Terraform Apply
-        run: |
-          cd pay-app
-          terraform apply -auto-approve
+        run: terraform apply --var-file=dev.tfvars -auto-approve -lock=false

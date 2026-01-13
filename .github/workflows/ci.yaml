@@ -12,6 +12,9 @@ jobs:
   lint:
     name: Terraform Lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pay-app
 
     steps:
       - name: Checkout
@@ -23,4 +26,4 @@ jobs:
       - name: Run TFLint
         run: |
           tflint --init
-          tflint --recursive
+          tflint --recursive --var-file=dev.tfvars
