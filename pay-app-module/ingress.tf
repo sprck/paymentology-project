@@ -64,7 +64,7 @@ resource "aws_cloudfront_distribution" "cfn_pay_app" {
     custom_origin_config {
       http_port              = 80
       https_port             = 443
-      origin_protocol_policy = "https-only"
+      origin_protocol_policy = "http-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
@@ -321,6 +321,7 @@ resource "aws_lb_listener" "https_pay_app" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.tarG_pay_app.arn
+    
   }
 
   tags = merge(
