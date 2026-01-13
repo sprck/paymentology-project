@@ -315,7 +315,7 @@ resource "aws_lb_listener" "https_pay_app" {
   port              = 443
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate._validation.cert_pay_app.certificate_arn
+  certificate_arn   = aws_acm_certificate_validation.cert_pay_app.certificate_arn
 
   default_action {
     type             = "forward"
